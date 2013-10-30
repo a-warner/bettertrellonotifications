@@ -35,6 +35,11 @@ end
 
 post '/webhook' do
   puts params.inspect
-  parsed_body = Map.new(JSON.parse(request.body.read))
-  puts parsed_body.inspect
+  hook = Map.new(JSON.parse(request.body.read))
+
+  if hook.get('action', 'type') == 'commentCard'
+    mentions = Twitter::Extractor.extract_mentioned_screen_names(hook.get('action','data','text').to_s).uniq
+  end
+
+  puts hook.inspect
 end

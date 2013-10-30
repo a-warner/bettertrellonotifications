@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    dotenv (0.9.0)
     rack (1.5.2)
     rack-protection (1.5.1)
       rack
@@ -14,4 +15,5 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  dotenv
   sinatra

@@ -9,24 +9,37 @@ class CardMailer < ActionMailer::Base
 
   def created(creator, card)
     @creator, @card = creator, card
+
+    headers 'Message-ID' => message_id_for(card)
+
     mail subject: "#{subject_for_card(card)}",
       content_type: 'text/html'
   end
 
   def added_description(creator, card)
     @creator, @card = creator, card
+
+    headers 'In-Reply-To' => message_id_for(card)
+
     mail subject: "Re: #{subject_for_card(card)}",
       content_type: 'text/html'
   end
 
   def added_comment(creator, card, comment)
     @creator, @card, @comment = creator, card, comment
+
+    headers 'In-Reply-To' => message_id_for(card)
+
     mail from: "#{creator.username}@#{EMAIL_DOMAIN}",
       subject: "Re: #{subject_for_card(card)}",
       content_type: 'text/html'
   end
 
   private
+
+  def message_id_for(card)
+    "<#{card.id}@#{EMAIL_DOMAIN}>"
+  end
 
   def subject_for_card(card)
     "[#{card.board.name}] #{card.name}"

@@ -7,7 +7,7 @@ if ENV['RACK_ENV'] == 'production'
   ActionMailer::Base.perform_deliveries = true
   ActionMailer::Base.smtp_settings = {
       :authentication => :plain,
-      :address => "smtp.mailgun.org",
+      :address => ENV.fetch('MAILGUN_SMTP_SERVER'),
       :port => ENV.fetch('MAILGUN_SMTP_PORT'),
       :domain => ENV.fetch('MAILGUN_DOMAIN'),
       :user_name => ENV.fetch('MAILGUN_SMTP_LOGIN'),

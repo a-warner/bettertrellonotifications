@@ -2,6 +2,12 @@ require 'rubygems'
 Bundler.require
 
 Dotenv.load
+ENV['RACK_ENV'] ||= 'development'
+EMAIL_TO_ADDRESS = ENV.fetch('EMAIL_TO_ADDRESS')
+
+['config', 'lib', 'mailers'].each do |path|
+  Dir[File.dirname(__FILE__)+"/#{path}/*.rb"].each { |file| require file }
+end
 
 class Trello
   include HTTParty
@@ -37,8 +43,23 @@ post '/webhook' do
   puts params.inspect
   hook = Map.new(JSON.parse(request.body.read))
 
-  if hook.get('action', 'type') == 'commentCard'
-    mentions = Twitter::Extractor.extract_mentioned_screen_names(hook.get('action','data','text').to_s).uniq
+  card = hook.get('action', 'data', 'card')
+  card['board'] = hook.get('action', 'data', 'board')
+
+  case hook.get('action', 'type')
+  when 'commentCard'
+    comment = hook.get('action','data','text').to_s
+    # email
+  when 'createCard'
+    creator = hook.get('action', 'memberCreator')
+
+    CardMailer.created(creator, card, EMAIL_TO_ADDRESS).deliver
+  when 'updateCard'
+    old_description = hook.get('action', 'data', 'old', 'desc')
+
+    if (old_description || '').length.zero?
+      # email
+    end
   end
 
   puts hook.inspect

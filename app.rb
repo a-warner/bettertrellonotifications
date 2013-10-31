@@ -3,7 +3,6 @@ Bundler.require
 
 Dotenv.load
 ENV['RACK_ENV'] ||= 'development'
-EMAIL_TO_ADDRESS = ENV.fetch('EMAIL_TO_ADDRESS')
 
 ['config', 'lib', 'mailers'].each do |path|
   Dir[File.dirname(__FILE__)+"/#{path}/*.rb"].each { |file| require file }
@@ -46,19 +45,19 @@ post '/webhook' do
   card = hook.get('action', 'data', 'card')
   card['board'] = hook.get('action', 'data', 'board')
 
+  creator = hook.get('action', 'memberCreator')
+
   case hook.get('action', 'type')
   when 'commentCard'
     comment = hook.get('action','data','text').to_s
     # email
   when 'createCard'
-    creator = hook.get('action', 'memberCreator')
-
-    CardMailer.created(creator, card, EMAIL_TO_ADDRESS).deliver
+    CardMailer.created(creator, card).deliver
   when 'updateCard'
     old_description = hook.get('action', 'data', 'old', 'desc')
 
     if (old_description || '').length.zero?
-      # email
+      CardMailer.added_description(creator, card).deliver
     end
   end
 

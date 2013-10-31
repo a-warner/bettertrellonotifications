@@ -41,6 +41,7 @@ end
 post '/webhook' do
   puts params.inspect
   hook = Map.new(JSON.parse(request.body.read))
+  puts hook.inspect
 
   card = hook.get('action', 'data', 'card')
   card['board'] = hook.get('action', 'data', 'board')
@@ -50,7 +51,8 @@ post '/webhook' do
   case hook.get('action', 'type')
   when 'commentCard'
     comment = hook.get('action','data','text').to_s
-    # email
+
+    CardMailer.added_comment(creator, card, comment).deliver
   when 'createCard'
     CardMailer.created(creator, card).deliver
   when 'updateCard'
@@ -60,6 +62,4 @@ post '/webhook' do
       CardMailer.added_description(creator, card).deliver
     end
   end
-
-  puts hook.inspect
 end

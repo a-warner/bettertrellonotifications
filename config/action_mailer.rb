@@ -8,10 +8,10 @@ if ENV['RACK_ENV'] == 'production'
   ActionMailer::Base.smtp_settings = {
       :authentication => :plain,
       :address => "smtp.mailgun.org",
-      :port => 587,
+      :port => ENV.fetch('MAILGUN_SMTP_PORT'),
       :domain => ENV.fetch('MAILGUN_DOMAIN'),
-      :user_name => ENV.fetch('MAILGUN_USERNAME'),
-      :password => ENV.fetch('MAILGUN_PASSWORD')
+      :user_name => ENV.fetch('MAILGUN_SMTP_LOGIN'),
+      :password => ENV.fetch('MAILGUN_SMTP_PASSWORD')
   }
 else
   ActionMailer::Base.add_delivery_method(:letter_opener, LetterOpener::DeliveryMethod, :location => File.expand_path('../../tmp/letter_opener', __FILE__))

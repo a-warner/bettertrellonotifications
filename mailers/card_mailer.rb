@@ -12,7 +12,8 @@ class CardMailer < ActionMailer::Base
 
     headers 'Message-ID' => message_id_for(card)
 
-    mail subject: "#{subject_for_card(card)}",
+    mail from: creator_email(creator),
+      subject: "#{subject_for_card(card)}",
       content_type: 'text/html'
   end
 
@@ -21,7 +22,7 @@ class CardMailer < ActionMailer::Base
 
     headers 'In-Reply-To' => message_id_for(card)
 
-    mail from: unique_creator_email(creator),
+    mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
       content_type: 'text/html'
   end
@@ -31,15 +32,15 @@ class CardMailer < ActionMailer::Base
 
     headers 'In-Reply-To' => message_id_for(card)
 
-    mail from: unique_creator_email(creator),
+    mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
       content_type: 'text/html'
   end
 
   private
 
-  def unique_creator_email(creator)
-    "#{creator.username}@#{EMAIL_DOMAIN}"
+  def creator_email(creator)
+    %{"#{creator.fullName}" <#{creator.username}@#{EMAIL_DOMAIN}>}
   end
 
   def message_id_for(card)

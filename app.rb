@@ -9,6 +9,8 @@ ENV['RACK_ENV'] ||= 'development'
   Dir[File.dirname(__FILE__)+"/#{path}/*.rb"].each { |file| require file }
 end
 
+trello = Trello.new(ENV.fetch('TRELLO_KEY'), ENV.fetch('TRELLO_TOKEN'), ENV.fetch('TRELLO_SECRET'))
+
 get '/' do
   "Hello, world"
 end
@@ -17,9 +19,14 @@ head '/webhook' do
 end
 
 post '/webhook' do
-  puts params.inspect
-  hook = Map.new(JSON.parse(request.body.read))
-  puts hook.inspect
+  logger.info params.inspect
+
+  body = request.body.read
+
+  trello.verify_webhook!(body, "http://#{request.env['HTTP_HOST']}#{request.env['PATH_INFO']}", env['HTTP_X_TRELLO_WEBHOOK'])
+
+  hook = Map.new(JSON.parse(body))
+  logger.info hook.inspect
 
   card = hook.get('action', 'data', 'card')
   card['board'] = hook.get('action', 'data', 'board')
@@ -40,4 +47,9 @@ post '/webhook' do
       CardMailer.added_description(creator, card).deliver
     end
   end
+end
+
+error Trello::InvalidWebhook do
+  logger.error "Webhook couldn't be verified!"
+  status 400
 end

@@ -12,7 +12,7 @@ end
 trello = Trello.new(ENV.fetch('TRELLO_KEY'), ENV.fetch('TRELLO_TOKEN'), ENV.fetch('TRELLO_SECRET'))
 
 get '/' do
-  "Hello, world"
+  "Ok"
 end
 
 head '/webhook' do

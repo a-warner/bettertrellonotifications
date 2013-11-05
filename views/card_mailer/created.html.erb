@@ -1,5 +1,5 @@
 <h4>
-  <%= link_to @creator.fullName, "https://trello.com/#{@creator.id}" %> just created <%= link_to @card.name, "https://trello.com/c/#{@card.shortLink}" %>
+  <%= link_to @creator.fullName, "https://trello.com/#{@creator.id}" %> just created <%= card_link(@card) %>
 </h4>
 
 <%= render 'footer', :card => @card %>

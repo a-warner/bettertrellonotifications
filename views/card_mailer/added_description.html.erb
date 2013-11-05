@@ -1,5 +1,5 @@
 <h4>Description:</h4>
 
-<p><%= @card.desc %></p>
+<p><%= markdown_to_html(@card.desc) %></p>
 
 <%= render 'footer', :card => @card %>

@@ -39,6 +39,15 @@ class CardMailer < ActionMailer::Base
 
   private
 
+  delegate :sanitize, to: 'ActionView::Base.white_list_sanitizer'
+  delegate :fragment, to: 'Nokogiri::HTML'
+  def markdown_to_html(text)
+    html = RDiscount.new(text, :smart, :autolink).to_html
+
+    sanitize(fragment(html).to_html).html_safe
+  end
+  helper_method :markdown_to_html
+
   def creator_email(creator)
     %{"#{creator.fullName}" <#{creator.username}@#{EMAIL_DOMAIN}>}
   end

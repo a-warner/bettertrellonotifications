@@ -40,11 +40,8 @@ class CardMailer < ActionMailer::Base
   private
 
   delegate :sanitize, to: 'ActionView::Base.white_list_sanitizer'
-  delegate :fragment, to: 'Nokogiri::HTML'
   def markdown_to_html(text)
-    html = RDiscount.new(text, :smart, :autolink).to_html
-
-    sanitize(fragment(html).to_html).html_safe
+    sanitize(GitHub::Markdown.render_gfm(text)).html_safe
   end
   helper_method :markdown_to_html
 

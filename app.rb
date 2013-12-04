@@ -43,7 +43,7 @@ post '/webhook' do
   when 'updateCard'
     old_description = hook.get('action', 'data', 'old', 'desc')
 
-    if (old_description || '').length.zero?
+    if old_description.to_s.length.zero? && card['desc'].to_s.length.nonzero?
       CardMailer.added_description(creator, card).deliver
     end
   end

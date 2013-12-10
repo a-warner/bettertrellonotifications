@@ -1,4 +1,10 @@
 class Trello
+  class << self
+    extend Forwardable
+
+    def_delegators :client, :my_boards, :webhooks
+  end
+
   InvalidWebhook = Class.new(StandardError)
 
   include HTTParty
@@ -14,6 +20,18 @@ class Trello
 
   def verify_webhook!(body, callback_url, signature)
     raise InvalidWebhook unless Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), secret, body + callback_url)).chomp == signature
+  end
+
+  def my_boards
+    JSON.parse(get('/members/me/boards'))
+  end
+
+  def webhooks
+    JSON.parse(Trello.client.get("/tokens/#{Trello.client.send(:token)}/webhooks"))
+  end
+
+  def self.client
+    @client ||= new(ENV.fetch('TRELLO_KEY'), ENV.fetch('TRELLO_TOKEN'), ENV.fetch('TRELLO_SECRET'))
   end
 
   private

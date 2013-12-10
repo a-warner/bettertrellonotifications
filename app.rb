@@ -9,7 +9,7 @@ ENV['RACK_ENV'] ||= 'development'
   Dir[File.dirname(__FILE__)+"/#{path}/*.rb"].each { |file| require file }
 end
 
-trello = Trello.new(ENV.fetch('TRELLO_KEY'), ENV.fetch('TRELLO_TOKEN'), ENV.fetch('TRELLO_SECRET'))
+trello = Trello.client
 
 get '/' do
   "Ok"

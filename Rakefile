@@ -1,5 +1,10 @@
 require './app'
 
+def hook_board(id, options = {})
+  callback_url = File.join(options[:callback_url] || ENV.fetch('CANONICAL_URL'), 'webhook')
+  JSON.parse(Trello.client.post('/webhooks', query: { idModel: id, callbackURL: callback_url}))
+end
+
 namespace 'trello' do
   desc 'List webhooks'
   task 'webhooks' do
@@ -25,8 +30,7 @@ namespace 'trello' do
   desc 'Create a webhook for idModel'
   task 'hook', [:id_model, :callback_url] do |t, args|
     raise "Need to pass id_model argument" unless args[:id_model]
-    callback_url = File.join(args[:callback_url] || ENV.fetch('CANONICAL_URL'), 'webhook')
-    pp JSON.parse(Trello.client.post('/webhooks', query: { idModel: args[:id_model], callbackURL: callback_url}))
+    pp hook_board(args[:id_model], args.except(:id_model))
   end
 
   desc 'Create a webhook for Board Name'
@@ -53,9 +57,9 @@ namespace 'trello' do
     existing_webhooks = Trello.webhooks.index_by { |h| h['idModel'] }
     JSON.parse(Trello.client.get("/organizations/#{organization_id}/boards")).each do |board|
       unless existing_webhooks[board['id']]
-        puts "Hooking up #{board['name']}..."
-        Rake::Task['trello:hook'].invoke(board['id'])
-        puts "...done"
+        print "Hooking up #{board['name']}..."
+        hook_board(board['id'])
+        print "done\n"
       end
     end
   end

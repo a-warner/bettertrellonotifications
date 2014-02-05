@@ -5,6 +5,10 @@ def hook_board(id, options = {})
   JSON.parse(Trello.client.post('/webhooks', query: { idModel: id, callbackURL: callback_url}))
 end
 
+def find_board(board_name)
+  Trello.my_boards.detect { |board| board['name'] =~ Regexp.new(board_name, 'i') }
+end
+
 namespace 'trello' do
   desc 'List webhooks'
   task 'webhooks' do
@@ -38,15 +42,30 @@ namespace 'trello' do
     raise "Need to specify board_name" unless args[:board_name]
     board_name = args[:board_name]
 
-    Trello.my_boards.detect do |board|
-      board['name'] =~ Regexp.new(board_name, 'i')
-    end.tap do |found_board|
+    find_board(board_name).tap do |found_board|
       raise "Couldn't find board that matches #{board_name}" unless found_board
 
-      puts "Hooking:"
-      pp found_board
+      hook_board(found_board['id'])
+      puts "Hooked up #{found_board['name'].inspect}"
+    end
+  end
 
-      Rake::Task['trello:hook'].invoke(found_board['id'])
+  desc 'Unhook a board'
+  task 'unhook_board', [:board_name] do |t, args|
+    raise "Need to specify board_name" unless args[:board_name]
+    board_name = args[:board_name]
+
+    find_board(board_name).tap do |found_board|
+      raise "Couldn't find board that matches #{board_name}" unless found_board
+
+      Trello.webhooks.detect { |h| h['idModel'] == found_board['id'] }.tap do |hook|
+        if hook
+          Trello.remove_webhook(hook)
+          puts "Unhooked #{found_board['name'].inspect}"
+        else
+          puts "No webhook for board #{found_board['name'].inspect}"
+        end
+      end
     end
   end
 

@@ -2,7 +2,7 @@ class Trello
   class << self
     extend Forwardable
 
-    def_delegators :client, :my_boards, :webhooks
+    def_delegators :client, :my_boards, :webhooks, :remove_webhook
   end
 
   InvalidWebhook = Class.new(StandardError)
@@ -14,7 +14,7 @@ class Trello
     @key, @token, @secret = key, token, secret
   end
 
-  ['get', 'post', 'put'].each do |m|
+  ['get', 'post', 'put', 'delete'].each do |m|
     define_method(m) { |*args| trello_request(m, *args) }
   end
 
@@ -28,6 +28,10 @@ class Trello
 
   def webhooks
     JSON.parse(Trello.client.get("/tokens/#{Trello.client.send(:token)}/webhooks"))
+  end
+
+  def remove_webhook(webhook)
+    delete("/webhooks/#{webhook['id']}")
   end
 
   def self.client

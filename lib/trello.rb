@@ -19,7 +19,8 @@ class Trello
   end
 
   def verify_webhook!(body, callback_url, signature)
-    raise InvalidWebhook unless Base64.strict_encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), secret, body + callback_url)) == signature
+    normalized_payload = (body + callback_url).unpack('U*').pack('c*')
+    raise InvalidWebhook unless Base64.strict_encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), secret, normalized_payload)) == signature
   end
 
   def my_boards

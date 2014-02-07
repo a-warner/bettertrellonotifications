@@ -1,3 +1,4 @@
+require 'sinatra/activerecord/rake'
 require './app'
 
 def hook_board(id, options = {})

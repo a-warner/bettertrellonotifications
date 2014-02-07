@@ -35,8 +35,22 @@ class Trello
     delete("/webhooks/#{webhook['id']}")
   end
 
-  def self.client
-    @client ||= new(ENV.fetch('TRELLO_KEY'), ENV.fetch('TRELLO_TOKEN'), ENV.fetch('TRELLO_SECRET'))
+  class << self
+    def key
+      ENV.fetch('TRELLO_KEY')
+    end
+
+    def token
+      ENV.fetch('TRELLO_TOKEN')
+    end
+
+    def secret
+      ENV.fetch('TRELLO_SECRET')
+    end
+
+    def client
+      @client ||= new(key, token, secret)
+    end
   end
 
   private

@@ -5,11 +5,26 @@ Bundler.require
 Dotenv.load
 ENV['RACK_ENV'] ||= 'development'
 
-['config', 'lib', 'mailers'].each do |path|
+set :database_file, File.join(File.dirname(__FILE__), 'config', 'database.yml')
+
+['config', 'lib', 'models', 'mailers'].each do |path|
   Dir[File.dirname(__FILE__)+"/#{path}/*.rb"].each { |file| require file }
 end
 
 trello = Trello.client
+
+use Rack::Session::Cookie, :key => 'rack.session',
+                           :path => '/',
+                           :secret => ENV.fetch('COOKIE_SECRET')
+
+use OmniAuth::Builder do
+  provider :trello,
+           Trello.key,
+           Trello.secret,
+           app_name: 'BetterTrelloNotifications',
+           scope: 'read,write,account',
+           expiration: 'never'
+end
 
 get '/' do
   "Ok"
@@ -47,6 +62,18 @@ post '/webhook' do
       CardMailer.added_description(creator, card).deliver
     end
   end
+end
+
+%w(get post).each do |method|
+  send(method, '/auth/trello/callback') do
+    User.find_or_create_from_omniauth!(env['omniauth.auth'])
+
+    "Done"
+  end
+end
+
+get '/auth/failure' do
+  params[:message]
 end
 
 error Trello::InvalidWebhook do

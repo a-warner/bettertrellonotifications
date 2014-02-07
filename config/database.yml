@@ -1,0 +1,11 @@
+development:
+  adapter: postgresql
+  database: bettertrellonotifications-dev
+  pool: 5
+  timeout: 5000
+
+test:
+  adapter: postgresql
+  database: bettertrellonotifications-test
+  pool: 5
+  timeout: 5000

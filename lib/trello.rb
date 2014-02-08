@@ -15,7 +15,7 @@ class Trello
   end
 
   ['get', 'post', 'put', 'delete'].each do |m|
-    define_method(m) { |*args| trello_request(m, *args) }
+    define_method(m) { |*args| trello_request(ActiveSupport::StringInquirer.new(m), *args) }
   end
 
   def verify_webhook!(body, callback_url, signature)
@@ -33,6 +33,10 @@ class Trello
 
   def remove_webhook(webhook)
     delete("/webhooks/#{webhook['id']}")
+  end
+
+  def post_comment(card_id, comment_text)
+    post("/cards/#{card_id}/actions/comments", body: { text: comment_text })
   end
 
   class << self
@@ -57,7 +61,13 @@ class Trello
   attr_reader :key, :token, :secret
 
   def trello_request(method, path, options = {})
-    options[:query] = options.fetch(:query, {}).merge(key: key, token: token)
-    self.class.send(method, path, options).body
+    where_to_insert_creds = (method.get? || method.delete?) ? :query : :body
+
+    options[where_to_insert_creds] = options.fetch(where_to_insert_creds, {}).merge(key: key, token: token)
+    response = self.class.send(method, path, options)
+
+    raise Error.new(response) unless response.ok?
+
+    response.body
   end
 end

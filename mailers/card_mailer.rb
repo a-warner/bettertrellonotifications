@@ -14,6 +14,7 @@ class CardMailer < ActionMailer::Base
 
     mail from: creator_email(creator),
       subject: "#{subject_for_card(card)}",
+      reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
@@ -24,6 +25,7 @@ class CardMailer < ActionMailer::Base
 
     mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
+      reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
@@ -34,6 +36,7 @@ class CardMailer < ActionMailer::Base
 
     mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
+      reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
@@ -61,4 +64,8 @@ class CardMailer < ActionMailer::Base
     link_to(link_text, "https://trello.com/c/#{card.shortLink}")
   end
   helper_method :card_link
+
+  def email_reply_to_for_card(card)
+    "#{card.shortLink}@#{EMAIL_DOMAIN}"
+  end
 end

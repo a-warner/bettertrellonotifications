@@ -13,10 +13,6 @@ end
 
 trello = Trello.client
 
-use Rack::Session::Cookie, :key => 'rack.session',
-                           :path => '/',
-                           :secret => ENV.fetch('COOKIE_SECRET')
-
 use OmniAuth::Builder do
   provider :trello,
            Trello.key,
@@ -64,9 +60,16 @@ post '/webhook' do
   end
 end
 
+post "/emails/mailgun" do
+  Mailgun.verify_webhook!(params)
+  Email.create!(mailgun_data: params.reject { |k, v| k.to_s.starts_with?('attachment-') })
+
+  'OK'
+end
+
 %w(get post).each do |method|
   send(method, '/auth/trello/callback') do
-    User.find_or_create_from_omniauth!(env['omniauth.auth'])
+    session[:user_id] = User.find_or_create_from_omniauth!(env['omniauth.auth']).id
 
     "Done"
   end
@@ -76,7 +79,7 @@ get '/auth/failure' do
   params[:message]
 end
 
-error Trello::InvalidWebhook do
+error Trello::InvalidWebhook, Mailgun::InvalidSignature do
   logger.error "Webhook couldn't be verified!"
   status 400
 end

@@ -17,4 +17,22 @@ class User < ActiveRecord::Base
       end
     end
   end
+
+  def self.find_by_email(email)
+    UserEmail.find_by_email(email).try(:user)
+  end
+
+  def has_authed_trello?
+    trello_identity.present?
+  end
+
+  def process_email(email)
+    raise "Not authed" unless has_authed_trello?
+
+    trello_client.post_comment(email.to_address_local_part, email.body_text)
+  end
+
+  def trello_client
+    trello_identity.client
+  end
 end

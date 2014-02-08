@@ -1,4 +1,5 @@
 require 'sinatra/activerecord/rake'
+require 'delayed/tasks'
 require './app'
 
 def hook_board(id, options = {})

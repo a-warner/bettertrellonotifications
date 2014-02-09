@@ -1,6 +1,8 @@
 class User < ActiveRecord::Base
   has_many :emails, :class_name => 'UserEmail', dependent: :destroy
   has_one :trello_identity, dependent: :destroy
+  alias_method :trello, :trello_identity
+  delegate :username, :client, to: :trello, prefix: true
 
   def self.find_or_create_from_omniauth!(omniauth)
     if identity = TrelloIdentity.where(uid: omniauth.uid).first
@@ -37,15 +39,11 @@ class User < ActiveRecord::Base
     trello_client.post_comment(email.to_address_local_part, email.body_text)
   end
 
-  def trello_client
-    trello_identity.client
-  end
-
   def authorize_email!(email_address)
     UserEmail.where(email: email_address).
               where("user_id <> ?", id).
               first.try(:destroy)
 
-    emails.where(email: email_address).first_or_create.reprocess_emails
+    emails.where(email: email_address).first_or_create!.reprocess_emails
   end
 end

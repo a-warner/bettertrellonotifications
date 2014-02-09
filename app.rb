@@ -23,17 +23,19 @@ use OmniAuth::Builder do
            expiration: 'never'
 end
 
-def current_user
-  return @current_user if defined?(@current_user)
-  @current_user = User.find_by_id(session[:user_id]) if session[:user_id]
-end
+helpers do
+  def current_user
+    return @current_user if defined?(@current_user)
+    @current_user = User.find_by_id(session[:user_id]) if session[:user_id]
+  end
 
-def user_signed_in?
-  current_user.present?
+  def user_signed_in?
+    current_user.present?
+  end
 end
 
 get '/' do
-  "Ok"
+  erb :root
 end
 
 head '/webhook' do
@@ -99,7 +101,7 @@ end
 
     session[:user_id] = user.id
 
-    user.authorize_email!(session.delete(:email))
+    user.authorize_email!(session.delete(:email)) if session[:email]
 
     "Ok, you're all set"
   end
@@ -107,6 +109,20 @@ end
 
 get '/auth/failure' do
   params[:message]
+end
+
+get '/sign_out' do
+  session.delete(:user_id)
+
+  redirect to('/')
+end
+
+get '/sign_in' do
+  if user_signed_in?
+    redirect to('/')
+  else
+    redirect to('/auth/trello')
+  end
 end
 
 error Trello::InvalidWebhook, Mailgun::InvalidSignature do

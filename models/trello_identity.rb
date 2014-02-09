@@ -7,5 +7,9 @@ class TrelloIdentity < ActiveRecord::Base
     @client ||= Trello.new(Trello.key, credentials.token, credentials.secret)
   end
 
+  def username
+    omniauth_data.info.nickname
+  end
+
   delegate :credentials, to: :omniauth_data
 end

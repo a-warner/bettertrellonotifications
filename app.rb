@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'bundler/setup'
+require 'active_record'
 Bundler.require
 
 Dotenv.load
@@ -20,6 +21,15 @@ use OmniAuth::Builder do
            app_name: 'BetterTrelloNotifications',
            scope: 'read,write,account',
            expiration: 'never'
+end
+
+def current_user
+  return @current_user if defined?(@current_user)
+  @current_user = User.find_by_id(session[:user_id]) if session[:user_id]
+end
+
+def user_signed_in?
+  current_user.present?
 end
 
 get '/' do
@@ -67,11 +77,31 @@ post "/emails/mailgun" do
   'OK'
 end
 
+get '/emails/authorize' do
+  email = Email.verifier.verify(params[:email])
+
+  if user_signed_in? && current_user.has_authed_trello?
+    current_user.authorize_email!(email)
+    "Ok, you're all set"
+  else
+    session[:email] = email
+    redirect to('/auth/trello')
+  end
+end
+
 %w(get post).each do |method|
   send(method, '/auth/trello/callback') do
-    session[:user_id] = User.find_or_create_from_omniauth!(env['omniauth.auth']).id
+    if user = User.find_by_email(session[:email])
+      user.associate_trello_auth!(env['omniauth.auth'])
+    else
+      user = User.find_or_create_from_omniauth!(env['omniauth.auth'])
+    end
 
-    "Done"
+    session[:user_id] = user.id
+
+    user.authorize_email!(session.delete(:email))
+
+    "Ok, you're all set"
   end
 end
 

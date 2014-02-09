@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140208234758) do
+ActiveRecord::Schema.define(version: 20140209010501) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -32,10 +32,15 @@ ActiveRecord::Schema.define(version: 20140208234758) do
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority", using: :btree
 
   create_table "emails", force: true do |t|
-    t.text     "mailgun_data", null: false
+    t.text     "mailgun_data",                 null: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "from",                         null: false
+    t.boolean  "processed",    default: false, null: false
+    t.integer  "lock_version", default: 0,     null: false
   end
+
+  add_index "emails", ["from"], name: "index_emails_on_from", using: :btree
 
   create_table "trello_identities", force: true do |t|
     t.integer  "user_id"

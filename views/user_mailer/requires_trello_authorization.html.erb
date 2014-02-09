@@ -1,0 +1,7 @@
+<p>
+It looks like you sent us an email with the intent to comment on a card, if this is
+correct than please click below to authorize your trello account so that we can post
+on your behalf.
+</p>
+
+<h1><%= link_to('Click here to authorize your trello account', url_with_path('/emails/authorize', email: Email.verifier.generate(@email.from))) %></h1>

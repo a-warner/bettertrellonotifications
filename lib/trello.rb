@@ -1,4 +1,41 @@
 class Trello
+  class ApiObject
+    yaml_as "tag:ruby.yaml.org,2002:TrelloApiObject"
+
+    def initialize(attrs = {})
+      self.delegate_map = attrs
+    end
+
+    def encode_with(coder)
+      coder["delegate_map"] = delegate_map
+    end
+
+    def init_with(coder)
+      self.delegate_map = coder['delegate_map']
+    end
+
+    def respond_to_missing?(method, include_all)
+      delegate_map.respond_to?(method, include_all)
+    end
+
+    private
+    attr_reader :delegate_map
+
+    def delegate_map=(attrs)
+      @delegate_map = attrs.is_a?(Map) ? attrs.dup : Map.new(attrs)
+    end
+
+    def method_missing(method, *args, &block)
+      if delegate_map.respond_to?(method, !:include_all)
+        ret = delegate_map.__send__(method, *args, &block)
+        ret = Trello::ApiObject.new(ret) if ret.is_a?(Map)
+        ret
+      else
+        super
+      end
+    end
+  end
+
   class << self
     extend Forwardable
 

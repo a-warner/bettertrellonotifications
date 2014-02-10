@@ -11,5 +11,9 @@ class TrelloIdentity < ActiveRecord::Base
     omniauth_data.info.nickname
   end
 
+  def email
+    omniauth_data.info.email
+  end
+
   delegate :credentials, to: :omniauth_data
 end

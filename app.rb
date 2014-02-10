@@ -1,6 +1,11 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'active_record'
+
+module Rake
+  REDUCE_COMPAT = true
+end
+
 Bundler.require
 
 Dotenv.load

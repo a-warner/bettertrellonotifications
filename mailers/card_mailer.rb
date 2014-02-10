@@ -1,35 +1,38 @@
 class CardMailer < ActionMailer::Base
   include ActionView::Helpers::UrlHelper
 
-  def created(creator, card)
+  def created(user, creator, card)
     @creator, @card = creator, card
 
     headers 'Message-ID' => message_id_for(card)
 
     mail from: creator_email(creator),
       subject: "#{subject_for_card(card)}",
+      to: user.email,
       reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
-  def added_description(creator, card)
+  def added_description(user, creator, card)
     @creator, @card = creator, card
 
     headers 'In-Reply-To' => message_id_for(card)
 
     mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
+      to: user.email,
       reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
-  def added_comment(creator, card, comment)
+  def added_comment(user, creator, card, comment)
     @creator, @card, @comment = creator, card, comment
 
     headers 'In-Reply-To' => message_id_for(card)
 
     mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
+      to: user.email,
       reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end

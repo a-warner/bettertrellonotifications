@@ -32,7 +32,7 @@ class Email < ActiveRecord::Base
   end
 
   def process
-    return if processed?
+    return if processed? || sent_to_default_app_sender?
 
     if sending_user.try(:has_authed_trello?)
       transaction do
@@ -48,6 +48,10 @@ class Email < ActiveRecord::Base
 
   def parse_email_address(address)
     address[/\A(\S+)\z/, 1] || address[/<(\S+)>/, 1]
+  end
+
+  def sent_to_default_app_sender?
+    parse_email_address(to).downcase == ActionMailer::Base.default[:from].downcase
   end
 
   private

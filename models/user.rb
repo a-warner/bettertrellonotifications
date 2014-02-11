@@ -19,7 +19,7 @@ class User < ActiveRecord::Base
   def associate_trello_auth!(omniauth)
     authorize_email!(omniauth.info.email)
 
-    create_trello_identity do |t|
+    create_trello_identity! do |t|
       t.uid = omniauth.uid
       t.omniauth_data = omniauth
     end

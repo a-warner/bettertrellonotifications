@@ -115,3 +115,10 @@ error Trello::InvalidWebhook, Mailgun::InvalidSignature do
   logger.error "Webhook couldn't be verified!"
   status 400
 end
+
+error TrelloIdentity::NotAnOrgMember do
+  logger.error "Someone in the wrong org tried to join"
+  logger.error env['omniauth.auth'].inspect
+
+  status 401
+end

@@ -79,7 +79,7 @@ end
 
 %w(get post).each do |method|
   send(method, '/auth/trello/callback') do
-    if user = User.find_by_email(session[:email])
+    if user = User.find_by_email(session[:email]) || current_user
       user.associate_trello_auth!(env['omniauth.auth'])
     else
       user = User.find_or_create_from_omniauth!(env['omniauth.auth'])

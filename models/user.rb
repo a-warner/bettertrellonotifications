@@ -17,11 +17,15 @@ class User < ActiveRecord::Base
   end
 
   def associate_trello_auth!(omniauth)
-    authorize_email!(omniauth.info.email)
+    transaction do
+      trello_identity.try(:destroy)
 
-    create_trello_identity! do |t|
-      t.uid = omniauth.uid
-      t.omniauth_data = omniauth
+      authorize_email!(omniauth.info.email)
+
+      create_trello_identity! do |t|
+        t.uid = omniauth.uid
+        t.omniauth_data = omniauth
+      end
     end
   end
 

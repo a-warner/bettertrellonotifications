@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140209010501) do
+ActiveRecord::Schema.define(version: 20140211034011) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,13 +44,13 @@ ActiveRecord::Schema.define(version: 20140209010501) do
 
   create_table "trello_identities", force: true do |t|
     t.integer  "user_id"
-    t.string   "uid"
+    t.string   "uid",           null: false
     t.text     "omniauth_data"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "trello_identities", ["uid"], name: "index_trello_identities_on_uid", using: :btree
+  add_index "trello_identities", ["uid"], name: "index_trello_identities_on_uid", unique: true, using: :btree
   add_index "trello_identities", ["user_id"], name: "index_trello_identities_on_user_id", using: :btree
 
   create_table "user_emails", force: true do |t|

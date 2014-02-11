@@ -32,11 +32,12 @@ class Email < ActiveRecord::Base
   end
 
   def process
-    return if processed? || sent_to_default_app_sender?
+    return if processed?
+    return mark_processed! if sent_to_default_app_sender?
 
     if sending_user.try(:has_authed_trello?)
       transaction do
-        update!(processed: true)
+        mark_processed!
         sending_user.process_email(self)
       end
     else
@@ -52,6 +53,10 @@ class Email < ActiveRecord::Base
 
   def sent_to_default_app_sender?
     parse_email_address(to).downcase == ActionMailer::Base.default[:from].downcase
+  end
+
+  def mark_processed!
+    update!(processed: true)
   end
 
   private

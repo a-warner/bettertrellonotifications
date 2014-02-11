@@ -2,8 +2,10 @@ require 'rubygems'
 require 'bundler/setup'
 require 'active_record'
 
-module Rake
-  REDUCE_COMPAT = true
+unless defined?(Rake::REDUCE_COMPAT)
+  module Rake
+    REDUCE_COMPAT = true
+  end
 end
 
 Bundler.require

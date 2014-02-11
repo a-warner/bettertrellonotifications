@@ -11,6 +11,9 @@ def find_board(board_name)
   Trello.my_boards.detect { |board| board['name'] =~ Regexp.new(board_name, 'i') }
 end
 
+desc 'dummy environment task for delayed_job'
+task('environment') {}
+
 namespace 'trello' do
   desc 'List webhooks'
   task 'webhooks' do

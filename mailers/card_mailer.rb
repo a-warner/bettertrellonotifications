@@ -1,39 +1,39 @@
 class CardMailer < ActionMailer::Base
   include ActionView::Helpers::UrlHelper
 
-  EMAIL_DOMAIN = ENV.fetch('EMAIL_DOMAIN')
-
-  default from: "no-reply@#{EMAIL_DOMAIN}",
-          to: ENV.fetch('EMAIL_TO_ADDRESS')
-
-
-  def created(creator, card)
+  def created(user, creator, card)
     @creator, @card = creator, card
 
     headers 'Message-ID' => message_id_for(card)
 
     mail from: creator_email(creator),
       subject: "#{subject_for_card(card)}",
+      to: user.email,
+      reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
-  def added_description(creator, card)
+  def added_description(user, creator, card)
     @creator, @card = creator, card
 
     headers 'In-Reply-To' => message_id_for(card)
 
     mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
+      to: user.email,
+      reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
-  def added_comment(creator, card, comment)
+  def added_comment(user, creator, card, comment)
     @creator, @card, @comment = creator, card, comment
 
     headers 'In-Reply-To' => message_id_for(card)
 
     mail from: creator_email(creator),
       subject: "Re: #{subject_for_card(card)}",
+      to: user.email,
+      reply_to: email_reply_to_for_card(card),
       content_type: 'text/html'
   end
 
@@ -46,11 +46,11 @@ class CardMailer < ActionMailer::Base
   helper_method :markdown_to_html
 
   def creator_email(creator)
-    %{"#{creator.fullName}" <#{creator.username}@#{EMAIL_DOMAIN}>}
+    %{"#{creator.fullName}" <#{creator.username}@#{email_domain}>}
   end
 
   def message_id_for(card)
-    "<#{card.id}@#{EMAIL_DOMAIN}>"
+    "<#{card.id}@#{email_domain}>"
   end
 
   def subject_for_card(card)
@@ -61,4 +61,8 @@ class CardMailer < ActionMailer::Base
     link_to(link_text, "https://trello.com/c/#{card.shortLink}")
   end
   helper_method :card_link
+
+  def email_reply_to_for_card(card)
+    "#{card.shortLink}@#{email_domain}"
+  end
 end

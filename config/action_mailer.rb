@@ -2,7 +2,19 @@ ActionMailer::Base.view_paths = File.expand_path "../../views", __FILE__
 
 ActionMailer::Base.raise_delivery_errors = true
 
-if ENV['RACK_ENV'] == 'production'
+ActionMailer::Base.class_eval do
+  extend Delayed::DelayMail
+
+  def self.email_domain
+    ENV.fetch('EMAIL_DOMAIN')
+  end
+  delegate :email_domain, to: 'self.class'
+
+  default from: "no-reply@#{email_domain}",
+          to: ENV.fetch('EMAIL_TO_ADDRESS')
+end
+
+if ENV['RACK_ENV'] == 'production' || ENV['SMTP_EMAIL']
   ActionMailer::Base.delivery_method = :smtp
   ActionMailer::Base.perform_deliveries = true
   ActionMailer::Base.smtp_settings = {

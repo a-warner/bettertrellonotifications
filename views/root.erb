@@ -1,3 +1,7 @@
+<% if flash[:notice] %>
+  <h3 style="color: green"><%= flash[:notice] %></h3>
+<% end %>
+
 <ul>
   <% if user_signed_in? %>
     <h3>You are signed in as <%= current_user.trello_username %></h3>

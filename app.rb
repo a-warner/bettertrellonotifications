@@ -91,7 +91,8 @@ end
 
     user.authorize_email!(session.delete(:email)) if session[:email]
 
-    "Ok, you're all set"
+    flash[:notice] = "Ok, you're all set"
+    redirect to('/')
   end
 end
 

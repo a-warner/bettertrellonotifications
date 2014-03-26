@@ -4,7 +4,31 @@ require './app'
 
 def hook_board(id, options = {})
   callback_url = File.join(options[:callback_url] || ENV.fetch('CANONICAL_URL'), 'webhook')
-  JSON.parse(Trello.client.post('/webhooks', query: { idModel: id, callbackURL: callback_url}))
+
+  TrelloBoard.transaction do
+    TrelloBoard.where(trello_id: id).first.try(:destroy!)
+
+    JSON.parse(Trello.client.post('/webhooks', query: { idModel: id, callbackURL: callback_url})).tap do |hook|
+      TrelloBoard.create! do |b|
+        b.trello_id = id
+        b.webhook_id = hook['id']
+      end
+    end
+  end
+end
+
+def unhook_board(board)
+  Trello.webhooks.detect { |h| h['idModel'] == board['id'] }.tap do |hook|
+    if hook
+      TrelloBoard.transaction do
+        TrelloBoard.where(trello_id: board['id']).first.try(:destroy!)
+        Trello.remove_webhook(hook)
+      end
+      puts "Unhooked #{board['name'].inspect}"
+    else
+      puts "No webhook for board #{board['name'].inspect}"
+    end
+  end
 end
 
 def find_board(board_name)
@@ -36,6 +60,19 @@ namespace 'trello' do
     pp Trello.my_boards
   end
 
+  desc 'Sync webhook boards'
+  task 'boards:sync_webhooks' do
+    boards = Trello.my_boards.index_by { |b| b['id'] }
+
+    Trello.webhooks.each do |hook|
+      next unless board = boards[hook['idModel']]
+
+      TrelloBoard.where(trello_id: board['id']).
+                  first_or_create!(webhook_id: hook['id']).
+                  update!(webhook_id: hook['id'])
+    end
+  end
+
   desc 'Create a webhook for idModel'
   task 'hook', [:id_model, :callback_url] do |t, args|
     raise "Need to pass id_model argument" unless args[:id_model]
@@ -63,14 +100,7 @@ namespace 'trello' do
     find_board(board_name).tap do |found_board|
       raise "Couldn't find board that matches #{board_name}" unless found_board
 
-      Trello.webhooks.detect { |h| h['idModel'] == found_board['id'] }.tap do |hook|
-        if hook
-          Trello.remove_webhook(hook)
-          puts "Unhooked #{found_board['name'].inspect}"
-        else
-          puts "No webhook for board #{found_board['name'].inspect}"
-        end
-      end
+      unhook_board(found_board)
     end
   end
 

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+
+mkdir -p tmp/
+wget -O tmp/latest_dump.dump `heroku pgbackups:url`
+
+if psql -lqt | cut -d \| -f 1 | grep -w "bettertrellonotifications-dev_bak" > /dev/null 2>&1; then
+  dropdb "bettertrellonotifications-dev_bak"
+fi
+
+if psql -lqt | cut -d \| -f 1 | grep -w "bettertrellonotifications-dev" > /dev/null 2>&1; then
+  psql -c 'alter database "bettertrellonotifications-dev" rename to "bettertrellonotifications-dev_bak"'
+fi
+
+createdb "bettertrellonotifications-dev"
+pg_restore --verbose --clean --no-acl --no-owner -U `whoami` -d "bettertrellonotifications-dev" tmp/latest_dump.dump

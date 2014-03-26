@@ -1,7 +1,11 @@
-<% if user_signed_in? %>
-  <h3>You are signed in as <%= current_user.trello_username %></h3>
-<% end %>
 <ul>
-  <li><a href="/sign_in">Sign In</a></li>
-  <li><a href="/sign_out">Sign Out</a></li>
+  <% if user_signed_in? %>
+    <h3>You are signed in as <%= current_user.trello_username %></h3>
+    <% if current_user.admin? %>
+      <li><a href="/delayed_job">Delayed Jobs</a></li>
+    <% end %>
+    <li><a href="/sign_out">Sign Out</a></li>
+  <% else %>
+    <li><a href="/sign_in">Sign In</a></li>
+  <% end %>
 </ul>

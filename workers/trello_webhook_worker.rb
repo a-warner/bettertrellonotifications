@@ -2,7 +2,7 @@ class TrelloWebhookWorker < Struct.new(:body)
   def perform
     hook = Trello::ApiObject.new(JSON.parse(body))
 
-    card = hook.get('action', 'data', 'card')
+    card = hook.get('action', 'data', 'card') || {}
     card['board'] = hook.get('action', 'data', 'board')
 
     creator = hook.get('action', 'memberCreator')

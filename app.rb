@@ -45,6 +45,10 @@ register do
   def require_user(*)
     condition do
       unless user_signed_in?
+        if params[:email]
+          session[:email] = Email.verifier.verify(params[:email])
+        end
+
         session[:desired_location] = request.path_info
         redirect to('/sign_in')
       end

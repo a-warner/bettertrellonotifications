@@ -2,6 +2,6 @@
 —<br>
 <%= card_link(@card, "View this card on Trello") %> or reply to this email to comment
 <br>
-Change your <%= link_to("email preferences", File.join(ENV.fetch('CANONICAL_URL'), 'email_preferences')) %>
+Change your <%= link_to("email preferences", url_with_path('/email_preferences', email: Email.verifier.generate(user.email))) %>
 to configure what you get alerts about
 </p>

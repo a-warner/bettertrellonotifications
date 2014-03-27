@@ -1,8 +1,11 @@
 class CardMailer < ActionMailer::Base
   include ActionView::Helpers::UrlHelper
+  include UrlHelper
+  helper_method :url_with_path
 
   def created(user, creator, card)
     @creator, @card = creator, card
+    @user = user
 
     headers 'Message-ID' => message_id_for(card)
 
@@ -15,6 +18,7 @@ class CardMailer < ActionMailer::Base
 
   def added_description(user, creator, card)
     @creator, @card = creator, card
+    @user = user
 
     headers 'In-Reply-To' => message_id_for(card)
 
@@ -27,6 +31,7 @@ class CardMailer < ActionMailer::Base
 
   def added_comment(user, creator, card, comment)
     @creator, @card, @comment = creator, card, comment
+    @user = user
 
     headers 'In-Reply-To' => message_id_for(card)
 

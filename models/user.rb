@@ -88,7 +88,7 @@ class User < ActiveRecord::Base
   end
 
   def comment_mentions_user?(comment)
-    return unless trello_identity.present?
+    return unless comment.present? && trello_identity.present?
 
     comment =~ /(^|[^\w\d])@#{trello_identity.username}([^\w\d]|$)/
   end

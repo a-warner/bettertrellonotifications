@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'forward'
+
+$stdout.sync = true
+Forward::CLI.run(ARGV)

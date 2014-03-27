@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+
+unless ['forward', 'rerun'].all? {|g| system("command -v #{g} > /dev/null 2>&1") }
+  puts "Please gem install forward and rerun before running #{$0}"
+  exit 1
+end
+
+port = ARGV.first || '4321'
+server_command = "rerun 'rackup -p #{port}'"
+forward_app_name = "bettertrello"
+
+tmp = File.expand_path('../../tmp', __FILE__)
+FileUtils.mkdir_p(tmp)
+
+pipe = File.join(tmp, 'forward_pipe')
+FileUtils.rm(pipe) if File.exist?(pipe)
+
+system("mkfifo #{pipe}")
+at_exit { FileUtils.rm(pipe) rescue nil }
+
+forward_pid = fork do
+  pipe_handle = open(pipe, 'w+')
+  printed_url = false
+
+  IO.popen([File.expand_path('../forward_wrapper', __FILE__), port, forward_app_name], 'r', :err => [:child, :out]) do |f|
+    f.each do |line|
+      if !printed_url && line =~ %r{(https?://#{forward_app_name}.*)$}
+        pipe_handle.puts $1
+        pipe_handle.flush
+
+        printed_url = true
+      end
+
+      print(line)
+    end
+  end
+
+  unless $?.success?
+    pipe_handle.puts "ERROR"
+    pipe_handle.flush
+  end
+
+  at_exit { pipe_handle.close }
+end
+at_exit { Process.kill("TERM", forward_pid) }
+
+pipe_handle = open(pipe, 'r+')
+at_exit { pipe_handle.close }
+
+url = pipe_handle.gets.chomp
+
+if url == "ERROR"
+  puts "Couldn't reserve the subdomain...bailing"
+  exit 1
+end
+
+pid = fork do
+  run_cmd = "CANONICAL_URL=#{url} #{server_command}"
+  puts "Running: #{run_cmd}"
+  system(run_cmd)
+end
+
+sleep 3
+
+system('open', url + '/')
+
+Process.waitpid(pid)

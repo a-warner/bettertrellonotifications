@@ -67,6 +67,7 @@ namespace 'trello' do
 
     Trello.webhooks.each do |hook|
       next unless board = boards[hook['idModel']]
+      next unless hook['callbackURL'].starts_with?(ENV.fetch('CANONICAL_URL'))
 
       attrs = {webhook_id: hook['id'], name: board['name']}
 

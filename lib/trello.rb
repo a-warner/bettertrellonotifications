@@ -73,6 +73,10 @@ class Trello
     JSON.parse(get("/boards/#{board_id}"))
   end
 
+  def get_card(card_id)
+    a(get("/cards/#{card_id}"))
+  end
+
   def remove_webhook(webhook)
     delete("/webhooks/#{webhook['id']}")
   end
@@ -112,4 +116,9 @@ class Trello
 
     response.body
   end
+
+  def json_to_api_object(json)
+    ApiObject.new(JSON.parse(json))
+  end
+  alias_method :a, :json_to_api_object
 end

@@ -132,7 +132,7 @@ get '/email_preferences', require_user: true do
 end
 
 post '/email_preferences/update', require_user: true do
-  prefs = params[:email_preferences].each_with_object({}) { |(id, _), h| h[id] = 'true' }
+  prefs = (params[:email_preferences].presence || {}).each_with_object({}) { |(id, _), h| h[id] = 'true' }
   current_user.update!(email_preferences: prefs)
 
   flash[:notice] = "Success!"

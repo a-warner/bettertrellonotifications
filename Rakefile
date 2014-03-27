@@ -121,4 +121,12 @@ namespace 'trello' do
       end
     end
   end
+
+  task 'email_preferences:accept_all' do |t, args|
+    boards = TrelloBoard.all
+
+    User.find_each do |u|
+      u.update!(email_preferences: boards.each_with_object({}) { |b, h| h[b.trello_id] = 'true' })
+    end
+  end
 end

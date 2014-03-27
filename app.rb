@@ -41,6 +41,17 @@ helpers do
   end
 end
 
+register do
+  def require_user(*)
+    condition do
+      unless user_signed_in?
+        session[:desired_location] = request.path_info
+        redirect to('/sign_in')
+      end
+    end
+  end
+end
+
 get '/' do
   erb :root
 end
@@ -92,7 +103,7 @@ end
     user.authorize_email!(session.delete(:email)) if session[:email]
 
     flash[:notice] = "Ok, you're all set"
-    redirect to('/')
+    redirect to(session.delete(:desired_location) || '/')
   end
 end
 

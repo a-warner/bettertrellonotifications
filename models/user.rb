@@ -52,19 +52,19 @@ class User < ActiveRecord::Base
   end
 
   def notify_comment_on_card(creator, card, comment)
-    return if is_trello_user?(creator)
+    return unless wants_to_be_notified_about?(creator, card, comment)
 
     CardMailer.delay.added_comment(self, creator, card, comment)
   end
 
   def notify_card_created(creator, card)
-    return if is_trello_user?(creator)
+    return unless wants_to_be_notified_about?(creator, card)
 
     CardMailer.delay.created(self, creator, card)
   end
 
   def notify_description_added(creator, card)
-    return if is_trello_user?(creator)
+    return unless wants_to_be_notified_about?(creator, card)
 
     CardMailer.delay.added_description(self, creator, card)
   end
@@ -74,6 +74,30 @@ class User < ActiveRecord::Base
   end
 
   private
+
+  def wants_to_be_notified_about?(creator, card, comment = nil)
+    return if is_trello_user?(creator)
+
+    wants_notifications_for_everything_on_board?(card.board) ||
+      comment_mentions_user?(comment) ||
+      user_assigned_to_card?(card)
+  end
+
+  def wants_notifications_for_everything_on_board?(board)
+    email_preferences[board.id].present?
+  end
+
+  def comment_mentions_user?(comment)
+    return unless comment.present? && trello_identity.present?
+
+    comment =~ /(^|[^\w\d])@#{trello_identity.username}([^\w\d]|$)/
+  end
+
+  def user_assigned_to_card?(card)
+    return unless trello_identity.present?
+
+    card.idMembers.any? { |id| id == trello_identity.uid }
+  end
 
   def is_trello_user?(creator)
     creator['username'] == trello_username

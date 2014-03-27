@@ -43,6 +43,7 @@ class Trello
   end
 
   InvalidWebhook = Class.new(StandardError)
+  Error = Class.new(StandardError)
 
   include HTTParty
   base_uri 'https://api.trello.com/1'
@@ -65,7 +66,15 @@ class Trello
   end
 
   def webhooks
-    JSON.parse(Trello.client.get("/tokens/#{Trello.client.send(:token)}/webhooks"))
+    JSON.parse(get("/tokens/#{Trello.client.send(:token)}/webhooks"))
+  end
+
+  def get_board(board_id)
+    JSON.parse(get("/boards/#{board_id}"))
+  end
+
+  def get_card(card_id)
+    a(get("/cards/#{card_id}"))
   end
 
   def remove_webhook(webhook)
@@ -107,4 +116,9 @@ class Trello
 
     response.body
   end
+
+  def json_to_api_object(json)
+    ApiObject.new(JSON.parse(json))
+  end
+  alias_method :a, :json_to_api_object
 end

@@ -2,9 +2,34 @@ require 'sinatra/activerecord/rake'
 require 'delayed/tasks'
 require './app'
 
-def hook_board(id, options = {})
+def hook_board(board, options = {})
   callback_url = File.join(options[:callback_url] || ENV.fetch('CANONICAL_URL'), 'webhook')
-  JSON.parse(Trello.client.post('/webhooks', query: { idModel: id, callbackURL: callback_url}))
+
+  TrelloBoard.transaction do
+    TrelloBoard.where(trello_id: board['id']).first.try(:destroy!)
+
+    JSON.parse(Trello.client.post('/webhooks', query: { idModel: board['id'], callbackURL: callback_url})).tap do |hook|
+      TrelloBoard.create! do |b|
+        b.trello_id = board['id']
+        b.webhook_id = hook['id']
+        b.name = board['name']
+      end
+    end
+  end
+end
+
+def unhook_board(board)
+  Trello.webhooks.detect { |h| h['idModel'] == board['id'] }.tap do |hook|
+    if hook
+      TrelloBoard.transaction do
+        TrelloBoard.where(trello_id: board['id']).first.try(:destroy!)
+        Trello.remove_webhook(hook)
+      end
+      puts "Unhooked #{board['name'].inspect}"
+    else
+      puts "No webhook for board #{board['name'].inspect}"
+    end
+  end
 end
 
 def find_board(board_name)
@@ -36,10 +61,26 @@ namespace 'trello' do
     pp Trello.my_boards
   end
 
+  desc 'Sync webhook boards'
+  task 'boards:sync_webhooks' do
+    boards = Trello.my_boards.index_by { |b| b['id'] }
+
+    Trello.webhooks.each do |hook|
+      next unless board = boards[hook['idModel']]
+      next unless hook['callbackURL'].starts_with?(ENV.fetch('CANONICAL_URL'))
+
+      attrs = {webhook_id: hook['id'], name: board['name']}
+
+      TrelloBoard.where(trello_id: board['id']).
+                  first_or_create!(attrs).
+                  update!(attrs)
+    end
+  end
+
   desc 'Create a webhook for idModel'
   task 'hook', [:id_model, :callback_url] do |t, args|
     raise "Need to pass id_model argument" unless args[:id_model]
-    pp hook_board(args[:id_model], args.except(:id_model))
+    pp hook_board(Trello.client.get_board(args[:id_model]), args.except(:id_model))
   end
 
   desc 'Create a webhook for Board Name'
@@ -50,7 +91,7 @@ namespace 'trello' do
     find_board(board_name).tap do |found_board|
       raise "Couldn't find board that matches #{board_name}" unless found_board
 
-      hook_board(found_board['id'])
+      hook_board(found_board)
       puts "Hooked up #{found_board['name'].inspect}"
     end
   end
@@ -63,14 +104,7 @@ namespace 'trello' do
     find_board(board_name).tap do |found_board|
       raise "Couldn't find board that matches #{board_name}" unless found_board
 
-      Trello.webhooks.detect { |h| h['idModel'] == found_board['id'] }.tap do |hook|
-        if hook
-          Trello.remove_webhook(hook)
-          puts "Unhooked #{found_board['name'].inspect}"
-        else
-          puts "No webhook for board #{found_board['name'].inspect}"
-        end
-      end
+      unhook_board(found_board)
     end
   end
 
@@ -85,6 +119,14 @@ namespace 'trello' do
         hook_board(board['id'])
         print "done\n"
       end
+    end
+  end
+
+  task 'email_preferences:accept_all' do |t, args|
+    boards = TrelloBoard.all
+
+    User.find_each do |u|
+      u.update!(email_preferences: boards.each_with_object({}) { |b, h| h[b.trello_id] = 'true' })
     end
   end
 end

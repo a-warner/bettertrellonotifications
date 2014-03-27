@@ -1,0 +1,17 @@
+<h1>Email Preferences</h1>
+
+<h3>What boards do you want notifications for?</h3>
+<h4>N.B. you <i>always</i> get notified of any action on a card that you're assigned to, and any comment that mentions you (sorry!!)</h4>
+<form action="/email_preferences/update" method="POST">
+  <input type="submit" value="Save">
+  <table>
+    <% @boards.each do |board| %>
+      <% input_name = "email_preferences[#{board.trello_id}]" %>
+      <tr>
+        <td><label for="<%= input_name %>"><%= board.name %></label></td>
+        <td><input type="checkbox" name="<%= input_name %>" <%= "CHECKED" if current_user.email_preferences[board.trello_id] %>></td>
+      </tr>
+    <% end %>
+  </table>
+  <input type="submit" value="Save">
+</form>

@@ -1,0 +1,8 @@
+<% if flash[:notice] %>
+  <h3 style="color: green"><%= flash[:notice] %></h3>
+<% end %>
+
+<div id="main">
+  <%= yield %>
+</div>
+

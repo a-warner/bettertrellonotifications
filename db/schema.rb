@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140211034011) do
+ActiveRecord::Schema.define(version: 20140326134451) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "hstore"
 
   create_table "delayed_jobs", force: true do |t|
     t.integer  "priority",   default: 0, null: false
@@ -42,6 +43,17 @@ ActiveRecord::Schema.define(version: 20140211034011) do
 
   add_index "emails", ["from"], name: "index_emails_on_from", using: :btree
 
+  create_table "trello_boards", force: true do |t|
+    t.string   "trello_id",  null: false
+    t.string   "webhook_id", null: false
+    t.string   "name",       null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "trello_boards", ["trello_id"], name: "index_trello_boards_on_trello_id", unique: true, using: :btree
+  add_index "trello_boards", ["webhook_id"], name: "index_trello_boards_on_webhook_id", using: :btree
+
   create_table "trello_identities", force: true do |t|
     t.integer  "user_id"
     t.string   "uid",           null: false
@@ -66,7 +78,8 @@ ActiveRecord::Schema.define(version: 20140211034011) do
   create_table "users", force: true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "admin",      default: false, null: false
+    t.boolean  "admin",             default: false, null: false
+    t.hstore   "email_preferences", default: {},    null: false
   end
 
 end

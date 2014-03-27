@@ -41,6 +41,17 @@ helpers do
   end
 end
 
+register do
+  def require_user(*)
+    condition do
+      unless user_signed_in?
+        session[:desired_location] = request.path_info
+        redirect to('/sign_in')
+      end
+    end
+  end
+end
+
 get '/' do
   erb :root
 end
@@ -92,7 +103,7 @@ end
     user.authorize_email!(session.delete(:email)) if session[:email]
 
     flash[:notice] = "Ok, you're all set"
-    redirect to('/')
+    redirect to(session.delete(:desired_location) || '/')
   end
 end
 
@@ -112,6 +123,20 @@ get '/sign_in' do
   else
     redirect to('/auth/trello')
   end
+end
+
+get '/email_preferences', require_user: true do
+  @boards = TrelloBoard.all
+
+  erb :email_preferences
+end
+
+post '/email_preferences/update', require_user: true do
+  prefs = params[:email_preferences].each_with_object({}) { |(id, _), h| h[id] = 'true' }
+  current_user.update!(email_preferences: prefs)
+
+  flash[:notice] = "Success!"
+  redirect to('/email_preferences')
 end
 
 error Trello::InvalidWebhook, Mailgun::InvalidSignature do

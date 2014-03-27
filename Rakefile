@@ -116,7 +116,7 @@ namespace 'trello' do
     JSON.parse(Trello.client.get("/organizations/#{organization_id}/boards")).each do |board|
       unless existing_webhooks[board['id']]
         print "Hooking up #{board['name']}..."
-        hook_board(board['id'])
+        hook_board(board)
         print "done\n"
       end
     end

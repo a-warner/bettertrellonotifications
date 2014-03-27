@@ -1,4 +1,7 @@
 <p style="font-size:small;color:#666">
 —<br>
 <%= card_link(@card, "View this card on Trello") %> or reply to this email to comment
+<br>
+Change your <%= link_to("email preferences", File.join(ENV.fetch('CANONICAL_URL'), 'email_preferences')) %>
+to configure what you get alerts about
 </p>

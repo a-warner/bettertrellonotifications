@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(version: 20140326134451) do
   create_table "trello_boards", force: true do |t|
     t.string   "trello_id",  null: false
     t.string   "webhook_id", null: false
+    t.string   "name",       null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

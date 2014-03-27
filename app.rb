@@ -125,6 +125,20 @@ get '/sign_in' do
   end
 end
 
+get '/email_preferences', require_user: true do
+  @boards = TrelloBoard.all
+
+  erb :email_preferences
+end
+
+post '/email_preferences/update', require_user: true do
+  prefs = params[:email_preferences].each_with_object({}) { |(id, _), h| h[id] = 'true' }
+  current_user.update!(email_preferences: prefs)
+
+  flash[:notice] = "Success!"
+  redirect to('/email_preferences')
+end
+
 error Trello::InvalidWebhook, Mailgun::InvalidSignature do
   logger.error "Webhook couldn't be verified!"
   status 400

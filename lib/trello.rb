@@ -65,7 +65,11 @@ class Trello
   end
 
   def webhooks
-    JSON.parse(Trello.client.get("/tokens/#{Trello.client.send(:token)}/webhooks"))
+    JSON.parse(get("/tokens/#{Trello.client.send(:token)}/webhooks"))
+  end
+
+  def get_board(board_id)
+    JSON.parse(get("/boards/#{board_id}"))
   end
 
   def remove_webhook(webhook)

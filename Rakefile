@@ -2,16 +2,17 @@ require 'sinatra/activerecord/rake'
 require 'delayed/tasks'
 require './app'
 
-def hook_board(id, options = {})
+def hook_board(board, options = {})
   callback_url = File.join(options[:callback_url] || ENV.fetch('CANONICAL_URL'), 'webhook')
 
   TrelloBoard.transaction do
-    TrelloBoard.where(trello_id: id).first.try(:destroy!)
+    TrelloBoard.where(trello_id: board['id']).first.try(:destroy!)
 
-    JSON.parse(Trello.client.post('/webhooks', query: { idModel: id, callbackURL: callback_url})).tap do |hook|
+    JSON.parse(Trello.client.post('/webhooks', query: { idModel: board['id'], callbackURL: callback_url})).tap do |hook|
       TrelloBoard.create! do |b|
-        b.trello_id = id
+        b.trello_id = board['id']
         b.webhook_id = hook['id']
+        b.name = board['name']
       end
     end
   end
@@ -67,16 +68,18 @@ namespace 'trello' do
     Trello.webhooks.each do |hook|
       next unless board = boards[hook['idModel']]
 
+      attrs = {webhook_id: hook['id'], name: board['name']}
+
       TrelloBoard.where(trello_id: board['id']).
-                  first_or_create!(webhook_id: hook['id']).
-                  update!(webhook_id: hook['id'])
+                  first_or_create!(attrs).
+                  update!(attrs)
     end
   end
 
   desc 'Create a webhook for idModel'
   task 'hook', [:id_model, :callback_url] do |t, args|
     raise "Need to pass id_model argument" unless args[:id_model]
-    pp hook_board(args[:id_model], args.except(:id_model))
+    pp hook_board(Trello.client.get_board(args[:id_model]), args.except(:id_model))
   end
 
   desc 'Create a webhook for Board Name'
@@ -87,7 +90,7 @@ namespace 'trello' do
     find_board(board_name).tap do |found_board|
       raise "Couldn't find board that matches #{board_name}" unless found_board
 
-      hook_board(found_board['id'])
+      hook_board(found_board)
       puts "Hooked up #{found_board['name'].inspect}"
     end
   end

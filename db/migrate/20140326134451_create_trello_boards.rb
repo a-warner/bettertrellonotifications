@@ -3,6 +3,7 @@ class CreateTrelloBoards < ActiveRecord::Migration
     create_table :trello_boards do |t|
       t.string :trello_id, null: false
       t.string :webhook_id, null: false
+      t.string :name, null: false
 
       t.timestamps null: false
     end

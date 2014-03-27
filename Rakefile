@@ -14,6 +14,11 @@ def hook_board(board, options = {})
         b.webhook_id = hook['id']
         b.name = board['name']
       end
+
+      User.find_each do |u|
+        u.email_preferences = u.email_preferences.merge(board['id'] => 'true')
+        u.save!
+      end
     end
   end
 end

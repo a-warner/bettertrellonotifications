@@ -43,6 +43,7 @@ class Trello
   end
 
   InvalidWebhook = Class.new(StandardError)
+  Error = Class.new(StandardError)
 
   include HTTParty
   base_uri 'https://api.trello.com/1'

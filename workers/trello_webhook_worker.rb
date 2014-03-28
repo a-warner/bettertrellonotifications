@@ -22,9 +22,10 @@ class TrelloWebhookWorker < Struct.new(:body)
         u.notify_card_created(creator, card)
       end
     when 'updateCard'
-      old_description = hook.get('action', 'data', 'old', 'desc')
+      old_data = hook.get('action', 'data', 'old')
+      return unless old_data.try(:key?, 'desc')
 
-      if old_description.to_s.length.zero? && card['desc'].to_s.length.nonzero?
+      if old_data['desc'].to_s.length.zero? && card['desc'].to_s.length.nonzero?
         User.find_each do |u|
           u.notify_description_added(creator, card)
         end

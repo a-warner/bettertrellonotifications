@@ -68,7 +68,7 @@ post '/webhook' do
 
   body = request.body.read
 
-  trello.verify_webhook!(body, "http://#{request.env['HTTP_HOST']}#{request.env['PATH_INFO']}", env['HTTP_X_TRELLO_WEBHOOK'])
+  trello.verify_webhook!(body, "#{ENV.fetch('CANONICAL_URL')}#{request.env['PATH_INFO']}", env['HTTP_X_TRELLO_WEBHOOK'])
 
   Delayed::Job.enqueue(TrelloWebhookWorker.new(body))
 

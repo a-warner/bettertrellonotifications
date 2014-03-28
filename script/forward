@@ -25,7 +25,7 @@ forward_pid = fork do
 
   IO.popen([File.expand_path('../forward_wrapper', __FILE__), port, forward_app_name], 'r', :err => [:child, :out]) do |f|
     f.each do |line|
-      if !printed_url && line =~ %r{(https?://#{forward_app_name}.*)$}
+      if !printed_url && line =~ %r{(https?://#{forward_app_name}[a-z\d\-_.]+)}
         pipe_handle.puts $1
         pipe_handle.flush
 

@@ -130,7 +130,7 @@ get '/sign_in' do
 end
 
 get '/email_preferences', require_user: true do
-  @boards = TrelloBoard.all
+  @boards = TrelloBoard.order(:name).all
 
   erb :email_preferences
 end

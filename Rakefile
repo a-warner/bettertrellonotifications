@@ -115,16 +115,25 @@ namespace 'trello' do
 
   desc 'Hook all boards in organization'
   task 'hook_all', [:organization_id] do |t, args|
-    raise "Specify organization_id" unless organization_id = args[:organization_id]
+    raise "Specify organization_id" unless organization_id = args[:organization_id] || ENV['ORGANIZATION_ID']
 
     existing_webhooks = Trello.webhooks.index_by { |h| h['idModel'] }
-    JSON.parse(Trello.client.get("/organizations/#{organization_id}/boards")).each do |board|
-      unless existing_webhooks[board['id']]
+    Trello.client.organization_boards(organization_id).reject(&:closed).each do |board|
+      unless existing_webhooks[board.id]
         print "Hooking up #{board['name']}..."
         hook_board(board)
         print "done\n"
       end
     end
+  end
+
+  desc 'Unhook closed boards'
+  task 'unhook_closed' do |t, args|
+    Trello.
+      webhooks.
+      map { |hook| Trello.client.get_board(hook.idModel) }.
+      select(&:closed).
+      each(&method(:unhook_board))
   end
 
   task 'email_preferences:accept_all' do |t, args|

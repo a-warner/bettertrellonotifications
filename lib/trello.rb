@@ -66,11 +66,11 @@ class Trello
   end
 
   def webhooks
-    JSON.parse(get("/tokens/#{Trello.client.send(:token)}/webhooks"))
+    a(get("/tokens/#{Trello.client.send(:token)}/webhooks"))
   end
 
   def get_board(board_id)
-    JSON.parse(get("/boards/#{board_id}"))
+    a(get("/boards/#{board_id}"))
   end
 
   def get_card(card_id)
@@ -83,6 +83,10 @@ class Trello
 
   def post_comment(card_id, comment_text)
     post("/cards/#{card_id}/actions/comments", body: { text: comment_text })
+  end
+
+  def organization_boards(organization_id)
+    a(get("/organizations/#{organization_id}/boards"))
   end
 
   class << self
@@ -118,7 +122,14 @@ class Trello
   end
 
   def json_to_api_object(json)
-    ApiObject.new(JSON.parse(json))
+    wrap_parsed_json(JSON.parse(json))
   end
   alias_method :a, :json_to_api_object
+
+  def wrap_parsed_json(parsed_json)
+    case parsed_json
+    when Array then parsed_json.map { |j| ApiObject.new(j) }
+    else ApiObject.new(parsed_json)
+    end
+  end
 end

@@ -16,7 +16,7 @@ FileUtils.mkdir_p(tmp)
 pipe = File.join(tmp, 'forward_pipe')
 FileUtils.rm(pipe) if File.exist?(pipe)
 
-system("mkfifo #{pipe}")
+system("mkfifo '#{pipe}'")
 at_exit { FileUtils.rm(pipe) rescue nil }
 
 forward_pid = fork do

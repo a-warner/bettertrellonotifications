@@ -2,7 +2,7 @@
 require 'fileutils'
 
 unless ['forward', 'rerun'].all? {|g| system("command -v #{g} > /dev/null 2>&1") }
-  puts "Please gem install forward and rerun before running #{$0}"
+  puts "Please gem install forward and 'rerun' before running #{$0}"
   exit 1
 end
 

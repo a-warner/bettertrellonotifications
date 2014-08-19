@@ -19,3 +19,8 @@ gem 'rake'
 gem 'sinatra'
 gem 'sinatra-activerecord'
 gem 'thin'
+
+group :development do
+  gem 'forward'
+  gem 'rerun'
+end

@@ -53,21 +53,27 @@ class User < ActiveRecord::Base
 
   def notify_comment_on_card(creator, card, comment)
     return unless wants_to_be_notified_about?(creator, card, comment)
+    return unless has_access_to?(card)
 
-    CardMailer.delay.added_comment(self, creator, card, comment)
+    CardMailer.added_comment(self, creator, card, comment).deliver
   end
+  handle_asynchronously :notify_comment_on_card
 
   def notify_card_created(creator, card)
     return unless wants_to_be_notified_about?(creator, card)
+    return unless has_access_to?(card)
 
-    CardMailer.delay.created(self, creator, card)
+    CardMailer.created(self, creator, card).deliver
   end
+  handle_asynchronously :notify_card_created
 
   def notify_description_added(creator, card)
     return unless wants_to_be_notified_about?(creator, card)
+    return unless has_access_to?(card)
 
-    CardMailer.delay.added_description(self, creator, card)
+    CardMailer.added_description(self, creator, card).deliver
   end
+  handle_asynchronously :notify_description_added
 
   def email
     trello_identity.try(:email) || emails.order(:id).first.try(:email) || (raise "User has no email")
@@ -101,5 +107,16 @@ class User < ActiveRecord::Base
 
   def is_trello_user?(creator)
     creator['username'] == trello_username
+  end
+
+  def has_access_to?(card)
+    return unless trello_identity.present?
+
+    begin
+      trello_client.get_card(card.id)
+      true
+    rescue Trello::PermissionDenied
+      false
+    end
   end
 end

@@ -44,6 +44,7 @@ class Trello
 
   InvalidWebhook = Class.new(StandardError)
   Error = Class.new(StandardError)
+  PermissionDenied = Class.new(StandardError)
 
   include HTTParty
   base_uri 'https://api.trello.com/1'
@@ -116,7 +117,14 @@ class Trello
     options[where_to_insert_creds] = options.fetch(where_to_insert_creds, {}).merge(key: key, token: token)
     response = self.class.send(method, path, options)
 
-    raise Error.new(response) unless response.ok?
+    unless response.ok?
+      case response.code
+      when 401
+        raise PermissionDenied.new(response)
+      else
+        raise Error.new(response)
+      end
+    end
 
     response.body
   end

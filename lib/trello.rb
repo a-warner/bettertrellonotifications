@@ -86,7 +86,7 @@ class Trello
     post("/cards/#{card_id}/actions/comments", body: { text: comment_text })
   end
 
-  def organization_boards(organization_id)
+  def organization_boards(organization_id = ENV.fetch('ORGANIZATION_ID'))
     a(get("/organizations/#{organization_id}/boards"))
   end
 

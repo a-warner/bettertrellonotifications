@@ -79,6 +79,10 @@ class User < ActiveRecord::Base
     trello_identity.try(:email) || emails.order(:id).first.try(:email) || (raise "User has no email")
   end
 
+  def visible_boards
+    trello_client.organization_boards
+  end
+
   private
 
   def wants_to_be_notified_about?(creator, card, comment = nil)

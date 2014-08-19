@@ -6,10 +6,10 @@
   <input type="submit" value="Save">
   <table>
     <% @boards.each do |board| %>
-      <% input_name = "email_preferences[#{board.trello_id}]" %>
+      <% input_name = "email_preferences[#{board.id}]" %>
       <tr>
         <td><label for="<%= input_name %>"><%= board.name %></label></td>
-        <td><input type="checkbox" name="<%= input_name %>" <%= "CHECKED" if current_user.email_preferences[board.trello_id] %>></td>
+        <td><input type="checkbox" name="<%= input_name %>" <%= "CHECKED" if current_user.email_preferences[board.id] %>></td>
       </tr>
     <% end %>
   </table>

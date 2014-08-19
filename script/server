@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-p", "--port", "set the port") do |port|
+    options[:port] = port.to_i
+  end
+end.parse!
+
+port = options[:port] || 4321
+
+exec("bundle exec thin -R config.ru start -p #{port} -e development")

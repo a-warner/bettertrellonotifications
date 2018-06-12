@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.3.4'
+ruby '2.2.10'
 
 gem 'actionmailer', require: 'action_mailer'
 gem 'delayed_job'
@@ -15,7 +15,7 @@ gem 'omniauth-trello'
 gem 'pg'
 gem 'pry'
 gem 'rack-flash3', require: 'rack-flash'
-gem 'rake'
+gem 'rake', '~> 0.9.6'
 gem 'sinatra'
 gem 'sinatra-activerecord'
 gem 'thin'

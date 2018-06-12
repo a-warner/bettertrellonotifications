@@ -1,6 +1,6 @@
 class Trello
   class ApiObject
-    yaml_as "tag:ruby.yaml.org,2002:TrelloApiObject"
+    yaml_tag "tag:ruby.yaml.org,2002:TrelloApiObject"
 
     def initialize(attrs = {})
       self.delegate_map = attrs

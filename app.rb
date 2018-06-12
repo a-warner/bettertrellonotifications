@@ -15,7 +15,7 @@ ENV['RACK_ENV'] ||= 'development'
 
 set :database_file, File.join(File.dirname(__FILE__), 'config', 'database.yml')
 
-['config', 'lib', 'models', 'mailers', 'workers'].each do |path|
+['config', 'initializers', 'lib', 'models', 'mailers', 'workers'].each do |path|
   Dir[File.dirname(__FILE__)+"/#{path}/*.rb"].each { |file| require file }
 end
 

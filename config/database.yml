@@ -11,7 +11,9 @@ test:
   timeout: 5000
 
 
-<% if ENV['RACK_ENV'] == 'production' %>
+<%
+
+if ENV['RACK_ENV'] == 'production'
 
 require 'cgi'
 require 'uri'
@@ -36,7 +38,6 @@ def attribute(name, value, force_string = false)
   end
 end
 
-adapter = uri.scheme
 adapter = "postgresql"
 
 database = (uri.path || "").split("/")[1]
@@ -48,6 +49,8 @@ host = uri.host
 port = uri.port
 
 params = CGI.parse(uri.query || "")
+
+%>
 
 <%= ENV["RAILS_ENV"] || ENV["RACK_ENV"] %>:
   <%= attribute "adapter",  adapter %>

@@ -1,6 +1,6 @@
 delayed_job_version = Gem.loaded_specs['delayed_job'].version.to_s
 
-unless '4.0.0' == delayed_job_version
+unless '4.0.6' == delayed_job_version
   raise LoadError, "Delayed Job has been upgraded to #{delayed_job_version}, consider deleting this monkeypatch"
 end
 

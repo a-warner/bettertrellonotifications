@@ -6,13 +6,12 @@ end
 
 require 'delayed_job'
 
-module FixPsych
-  def visit_Psych_Nodes_Mapping(object)
-    return revive(Psych.load_tags[object.tag].constantize, object) if Psych.load_tags[object.tag]
+[Psych::Visitors::ToRuby, Delayed::PsychExt::ToRuby].each do |clazz|
+  clazz.prepend(Module.new do
+    def visit_Psych_Nodes_Mapping(object)
+      return revive(Psych.load_tags[object.tag].constantize, object) if Psych.load_tags[object.tag]
 
-    super(object)
-  end
+      super(object)
+    end
+  end)
 end
-
-Psych::Visitors::ToRuby.prepend(FixPsych)
-Delayed::PsychExt::ToRuby.prepend(FixPsych)

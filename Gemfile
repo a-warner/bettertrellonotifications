@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.2.10'
+ruby '2.3.8'
 
 gem 'actionmailer', '~> 4.2.11', require: 'action_mailer'
 gem 'delayed_job'
@@ -11,6 +11,7 @@ gem 'github-markdown'
 gem 'httparty'
 gem 'letter_opener'
 gem 'map'
+gem 'nokogiri', '~> 1.10.4'
 gem 'omniauth-trello'
 gem 'pg'
 gem 'pry'

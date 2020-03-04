@@ -128,7 +128,7 @@ GEM
       rails-deprecated_sanitizer (>= 1.0.1)
     rails-html-sanitizer (1.0.4)
       loofah (~> 2.2, >= 2.2.2)
-    rake (12.3.3)
+    rake (0.9.6)
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
@@ -171,7 +171,7 @@ DEPENDENCIES
   pg
   pry
   rack-flash3
-  rake (~> 12.3.3)
+  rake (~> 0.9.6)
   rerun
   sinatra
   sinatra-activerecord

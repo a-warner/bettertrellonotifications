@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 ruby '2.6.7'
 
-gem 'actionmailer', '~> 4.2.11', require: 'action_mailer'
+gem 'actionmailer', '~> 6.1.7', require: 'action_mailer'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
 gem 'delayed_job_web'
